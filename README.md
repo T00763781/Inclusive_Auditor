@@ -44,6 +44,14 @@ The app caches the shell and assets after first load. You can continue auditing 
 - **Export CSV** downloads the snapshot or shares it through the native share sheet when available.
 - Export format (long): `building_id, building_name, address, created_at, floor, feature, present, notes, photo_count`.
 
+## Tooltip QA checklist
+
+- Tooltip appears above matrix cells and headers.
+- Tooltip is not clipped by the horizontal scroll container.
+- Tooltip stays aligned after horizontal scrolling.
+- Tooltip flips or shifts near viewport edges.
+- Keyboard: tab to `?`, Enter/Space toggles, Esc or blur closes.
+
 ## Scripts
 
 - `npm run dev` - local dev server

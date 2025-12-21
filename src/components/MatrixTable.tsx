@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import type { Matrix } from '../data/types';
 import { FEATURE_CATEGORIES, FEATURE_DEFINITIONS, RECOMMENDED_SITE_FEATURES } from '../data/defaults';
+import Tooltip from './Tooltip';
 
 type MatrixTableProps = {
   features: string[];
@@ -80,24 +81,33 @@ const MatrixTable = ({ features, floors, matrix, onToggle, onOpenDetails }: Matr
                     >
                       <div className="flex items-center gap-2">
                         <span>{feature}</span>
-                        <details className="relative">
-                          <summary
-                            className="list-none cursor-pointer"
+                        <Tooltip
+                          placement="right"
+                          content={
+                            <div className="space-y-2">
+                              <div>
+                                <p className="font-semibold text-tru-blue">Definition</p>
+                                <p className="mt-1">{info?.definition ?? 'Custom feature.'}</p>
+                              </div>
+                              <div>
+                                <p className="font-semibold text-tru-blue">Present if</p>
+                                <p className="mt-1">{info?.presentIf ?? 'Observed as available.'}</p>
+                              </div>
+                              <div>
+                                <p className="font-semibold text-tru-blue">Recommended</p>
+                                <p className="mt-1">{recommended}</p>
+                              </div>
+                            </div>
+                          }
+                        >
+                          <button
+                            type="button"
+                            className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-tru-grey text-[11px] font-semibold text-tru-blue focus-visible:ring-2 focus-visible:ring-tru-teal"
                             aria-label={`Info for ${feature}`}
                           >
-                            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-tru-grey text-[11px] font-semibold text-tru-blue">
-                              ?
-                            </span>
-                          </summary>
-                          <div className="absolute left-0 top-6 z-20 w-64 rounded-lg border border-tru-sage bg-white p-3 text-xs text-tru-blue shadow-soft">
-                            <p className="font-semibold text-tru-blue">Definition</p>
-                            <p className="mt-1">{info?.definition ?? 'Custom feature.'}</p>
-                            <p className="mt-2 font-semibold text-tru-blue">Present if</p>
-                            <p className="mt-1">{info?.presentIf ?? 'Observed as available.'}</p>
-                            <p className="mt-2 font-semibold text-tru-blue">Recommended</p>
-                            <p className="mt-1">{recommended}</p>
-                          </div>
-                        </details>
+                            ?
+                          </button>
+                        </Tooltip>
                       </div>
                     </th>
                     {floors.map((floor) => {
