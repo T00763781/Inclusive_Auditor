@@ -71,19 +71,26 @@ const normalizeMatrix = (
 ): { matrix: Matrix; changed: boolean } => {
   const next: Matrix = {};
   let changed = false;
+
   const arraysEqual = (a: string[], b: string[]) =>
     a.length === b.length && a.every((value, index) => value === b[index]);
+
   for (const feature of features) {
     const existingRow = matrix?.[feature] ?? {};
     const row: Record<string, MatrixCell> = {};
+
     for (const floor of floors) {
       const rawCell = (existingRow as Record<string, unknown>)[floor];
       const normalized = normalizeCell(rawCell);
-      const rawObj = rawCell && typeof rawCell === 'object' && !Array.isArray(rawCell)
-        ? (rawCell as MatrixCell)
-        : undefined;
+
+      const rawObj =
+        rawCell && typeof rawCell === 'object' && !Array.isArray(rawCell)
+          ? (rawCell as MatrixCell)
+          : undefined;
+
       const rawPhotoIds = rawObj?.photoIds ?? [];
       const normalizedPhotoIds = normalized.photoIds ?? [];
+
       const cellChanged =
         typeof rawCell === 'boolean' ||
         rawCell === undefined ||
@@ -92,34 +99,45 @@ const normalizeMatrix = (
         rawObj.present !== normalized.present ||
         rawObj.notes !== normalized.notes ||
         !arraysEqual(rawPhotoIds, normalizedPhotoIds);
+
       if (cellChanged) {
         changed = true;
       }
+
       row[floor] = normalized;
     }
+
     next[feature] = row;
   }
+
   return { matrix: next, changed };
 };
 
 export const listAudits = async (): Promise<BuildingAudit[]> => {
-  const all = await entries<BuildingAudit>(AUDIT_STORE);
-  const audits = all
-    .map((entry) => entry[1])
+  // FIX: entries() returns [key, value][] — do NOT generic it with BuildingAudit
+  const pairs = await entries(AUDIT_STORE);
+  const audits = pairs
+    .map(([, value]) => value as BuildingAudit)
     .filter((audit): audit is BuildingAudit => Boolean(audit));
+
   const normalized: BuildingAudit[] = [];
+
   for (const audit of audits) {
     const { matrix, changed } = normalizeMatrix(
       audit.matrix as Matrix,
       audit.features,
       audit.floors
     );
+
     const nextAudit = changed ? { ...audit, matrix } : audit;
+
     if (changed) {
       await set(nextAudit.id, nextAudit, AUDIT_STORE);
     }
+
     normalized.push(nextAudit);
   }
+
   return normalized.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 };
 
