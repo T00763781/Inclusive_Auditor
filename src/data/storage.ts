@@ -11,21 +11,29 @@ const PHOTO_STORE = createStore(DB_NAME, 'photos');
 const CONFIG_KEY = 'config';
 const CSV_KEY = 'csvSnapshot';
 
+/* =======================
+   CONFIG
+======================= */
+
 export const getConfig = async (): Promise<Config> => {
   const config = (await get(CONFIG_KEY, CONFIG_STORE)) as Config | undefined;
+
   if (!config) {
     const fresh = createDefaultConfig();
     await setConfig(fresh);
     return fresh;
   }
+
   if (config.version === CONFIG_VERSION) {
     return config;
   }
-  if (config.version && config.version < CONFIG_VERSION) {
+
+  if (config.version < CONFIG_VERSION) {
     const migrated = { ...config, version: CONFIG_VERSION };
     await setConfig(migrated);
     return migrated;
   }
+
   const fresh = createDefaultConfig();
   await setConfig(fresh);
   return fresh;
@@ -41,6 +49,10 @@ export const resetConfig = async (): Promise<Config> => {
   return fresh;
 };
 
+/* =======================
+   AUDITS
+======================= */
+
 export const addAudit = async (audit: BuildingAudit): Promise<void> => {
   await set(audit.id, audit, AUDIT_STORE);
 };
@@ -49,14 +61,19 @@ const normalizeCell = (cell: unknown): MatrixCell => {
   if (typeof cell === 'boolean') {
     return { present: cell };
   }
+
   if (!cell || typeof cell !== 'object') {
     return { present: false };
   }
+
   const candidate = cell as Partial<MatrixCell>;
+
   const notes = typeof candidate.notes === 'string' ? candidate.notes : undefined;
+
   const photoIds = Array.isArray(candidate.photoIds)
     ? candidate.photoIds.filter((id): id is string => typeof id === 'string' && id.length > 0)
     : undefined;
+
   return {
     present: Boolean(candidate.present),
     notes,
@@ -93,8 +110,7 @@ const normalizeMatrix = (
 
       const cellChanged =
         typeof rawCell === 'boolean' ||
-        rawCell === undefined ||
-        rawCell === null ||
+        rawCell == null ||
         !rawObj ||
         rawObj.present !== normalized.present ||
         rawObj.notes !== normalized.notes ||
@@ -114,8 +130,9 @@ const normalizeMatrix = (
 };
 
 export const listAudits = async (): Promise<BuildingAudit[]> => {
-  // FIX: entries() returns [key, value][] — do NOT generic it with BuildingAudit
+  // entries() returns [key, value][] — keys are IDBValidKey, values are BuildingAudit
   const pairs = await entries(AUDIT_STORE);
+
   const audits = pairs
     .map(([, value]) => value as BuildingAudit)
     .filter((audit): audit is BuildingAudit => Boolean(audit));
@@ -149,6 +166,10 @@ export const clearAudits = async (): Promise<void> => {
   await clear(AUDIT_STORE);
 };
 
+/* =======================
+   CSV SNAPSHOT
+======================= */
+
 export const getCsvSnapshot = async (): Promise<string> => {
   const snapshot = (await get(CSV_KEY, META_STORE)) as string | undefined;
   return snapshot ?? '';
@@ -162,6 +183,10 @@ export const clearCsvSnapshot = async (): Promise<void> => {
   await del(CSV_KEY, META_STORE);
 };
 
+/* =======================
+   PHOTOS
+======================= */
+
 export const addPhotoAsset = async (asset: PhotoAsset): Promise<void> => {
   await set(asset.id, asset, PHOTO_STORE);
 };
@@ -172,12 +197,14 @@ export const getPhotoAsset = async (id: string): Promise<PhotoAsset | undefined>
 
 export const getPhotoAssets = async (ids: string[]): Promise<PhotoAsset[]> => {
   const assets: PhotoAsset[] = [];
+
   for (const id of ids) {
     const asset = await getPhotoAsset(id);
     if (asset) {
       assets.push(asset);
     }
   }
+
   return assets;
 };
 
