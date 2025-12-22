@@ -5,6 +5,12 @@ export type MatrixCell = {
   present: boolean;
   notes?: string;
   photoIds?: string[];
+  geo?: {
+    lat: number;
+    lon: number;
+    accuracy?: number;
+    capturedAt: string;
+  };
 };
 
 export type Matrix = Record<FeatureLabel, Record<FloorLabel, MatrixCell>>;

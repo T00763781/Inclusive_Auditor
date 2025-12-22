@@ -9,7 +9,7 @@ type AppShellProps = {
 const AppShell = ({ savedCount, online, children }: AppShellProps) => {
   return (
     <div className="min-h-screen bg-tru-cloud text-tru-blue [background-image:radial-gradient(1200px_600px_at_8%_-10%,#bad1ba,transparent),radial-gradient(900px_500px_at_92%_0%,#ffcd00,transparent)]">
-      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 pb-28 pt-6 sm:px-6">
+      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 pb-[calc(env(safe-area-inset-bottom)+7rem)] pt-6 sm:px-6">
         <header className="rounded-xl border border-tru-sage bg-white/90 p-5 shadow-soft backdrop-blur">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>

@@ -1,64 +1,68 @@
-# TRU Accessibility Audit (PWA)
+# TRU Accessibility Audit
 
-Mobile-first PWA for building-by-building, floor-by-floor accessibility and inclusion auditing. Built for offline-first campus walkthroughs and GitHub Pages hosting.
+## What this app is
+TRU Accessibility Audit is a mobile-first tool for building-by-building, floor-by-floor accessibility and inclusion audits. It is designed for campus walkthroughs where speed, clarity, and offline reliability matter. The app helps auditors capture observations, notes, and photos in a consistent matrix so results can be exported and reviewed.
 
-## Quickstart
+## Why it exists
+Accessibility improvements depend on evidence that is easy to collect and defend. This app makes it simple to capture standardized observations in the field, even without internet access, and export them in a structured format.
 
-```bash
-npm install
-npm run dev
-```
+## What data is stored and where
+- Stored locally on this device: building names, addresses, matrix selections, notes, photos, and optional location captured during a tap.
+- Exported data: CSV and ZIP files are created on demand and saved or shared by you.
+- No cloud storage: there are no accounts, no uploads, and no background sync.
 
-## Build
+## How to create an audit
+1. Enter a Building Name (required) and optional Address.
+2. Use the matrix to mark features as Present or Absent by tapping the dot.
+3. Add notes or photos by using the Notes button for any feature and floor.
+4. Tap Save building to store the audit locally.
 
-```bash
-npm run build
-```
+## Using notes and photos
+- Notes are added per cell (feature + floor).
+- Photos are attached per cell and stored locally on this device.
+- Photos are included in ZIP export only when they are referenced by audits.
 
-## Deploy to GitHub Pages
+### Where photos live
+- Photos are stored in the browser's local IndexedDB storage.
+- They are not written to the filesystem.
+- They become files only when exported via ZIP.
+- Clearing browser data deletes them.
 
-This repo includes a GitHub Actions workflow that builds and deploys the `dist/` folder on every push to `main`.
+## Saving buildings
+- Tap Save building to store the current building audit.
+- The form clears for the next building.
+- A confirmation toast shows that the building was saved locally.
 
-1. Push to `main`.
-2. In GitHub, go to **Settings** -> **Pages**.
-3. Under **Build and deployment**, set **Source** to **GitHub Actions**.
-4. Wait for the workflow to finish; your site will be available at:
-   `https://t00763781.github.io/Inclusive_Auditor/`
+## Exporting CSV
+- Tap Export CSV to download a CSV file containing all saved audits.
+- The CSV includes one row per feature and floor.
+- Use CSV export for analysis, reporting, or import into other tools.
 
-Vite is configured with `base: "/Inclusive_Auditor/"` to match this repo name.
+## Exporting ZIP (CSV + photos)
+- Tap Export ZIP (CSV + photos) to download a single ZIP file.
+- The ZIP always includes audit.csv and a photos folder.
+- Photos are organized by building and named by feature and floor.
+- This is the best option for sharing evidence with teams.
 
-## Phone usage (Add to Home Screen)
+## Offline behavior
+- The app works offline after the first load.
+- All audits, notes, and photos are stored locally until export.
+- Exports also work offline.
 
-1. Open the deployed URL on your phone.
-2. Use the browser menu and choose **Add to Home Screen**.
-3. Launch the app from the new icon for a full-screen experience.
+## Mobile usage guidance
+- Add the app to your Home Screen for a full-screen experience.
+- Use the sticky action bar at the bottom for Save and Export actions.
+- The matrix scrolls horizontally and vertically for quick checks on site.
 
-## Offline usage
+## Privacy statement
+- No accounts, no server, no cloud storage.
+- All data stays on this device until you export it.
+- Optional location is only captured when you tap a feature, and only if you allow it.
 
-The app caches the shell and assets after first load. You can continue auditing offline; saved audits stay on the device until export.
+## Limitations
+- Browser storage is limited. Very large photo sets may exceed storage limits.
+- Clearing browser data or uninstalling the PWA removes local audits.
+- Photos are not synced anywhere automatically. Export is required for backups.
 
-## Data + export
-
-- Audits are stored locally in IndexedDB.
-- On every **Save**, the app regenerates and stores a CSV snapshot.
-- **Export CSV** downloads the snapshot or shares it through the native share sheet when available.
-- Export format (long): `building_id, building_name, address, created_at, floor, feature, present, notes, photo_count`.
-
-## Tooltip QA checklist
-
-- Tooltip appears above matrix cells and headers.
-- Tooltip is not clipped by the horizontal scroll container.
-- Tooltip stays aligned after horizontal scrolling.
-- Tooltip flips or shifts near viewport edges.
-- Keyboard: tab to `?`, Enter/Space toggles, Esc or blur closes.
-
-## Scripts
-
-- `npm run dev` - local dev server
-- `npm run build` - production build
-- `npm run preview` - preview the build
-
-## Notes
-
-- Floors and features are configurable and persist between sessions.
-- The "SITE" column is pinned to capture building-level items.
+## Intended use
+This app supports inclusive and accessible space audits for campus facilities. It is intended for structured observations and evidence gathering, not as a compliance certification tool.

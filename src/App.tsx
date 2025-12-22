@@ -20,23 +20,35 @@ import {
   deleteAudit,
   getConfig,
   getCsvSnapshot,
+  initDB,
   listAudits,
   resetConfig,
   setConfig,
   setCsvSnapshot
 } from './data/storage';
-import type { BuildingAudit, Config, MatrixCell } from './data/types';
+import type { BuildingAudit, Config, Matrix, MatrixCell } from './data/types';
 import { appReducer, initialState } from './state/reducer';
 import { buildCsvFilename, exportCsvFile } from './utils/exportCsv';
+import { buildZipFilename, exportZipFile } from './utils/exportZip';
+import { createUuid } from './utils/uuid';
+
+const cloneMatrix = (matrix: Matrix): Matrix => {
+  if (typeof structuredClone === 'function') {
+    return structuredClone(matrix);
+  }
+  return JSON.parse(JSON.stringify(matrix)) as Matrix;
+};
 
 const App = () => {
   const [state, dispatch] = useReducer(appReducer, initialState);
   const [featureManagerOpen, setFeatureManagerOpen] = useState(false);
   const [detailCell, setDetailCell] = useState<{ feature: string; floor: string } | null>(null);
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const geoDeniedRef = useRef(false);
 
   useEffect(() => {
     const init = async () => {
+      await initDB();
       const config = await getConfig();
       const floorsWithSite = [SITE_LABEL, ...config.floors];
       const matrix = createEmptyMatrix(config.features, floorsWithSite);
@@ -66,49 +78,68 @@ const App = () => {
     dispatch({ type: 'SET_CONFIG', payload: { config: nextConfig, matrix: nextMatrix } });
   };
 
-  const refreshAudits = async () => {
+  const showToast = (
+    message: string,
+    options?: { undoId?: string; durationMs?: number }
+  ) => {
+    if (undoTimerRef.current) {
+      window.clearTimeout(undoTimerRef.current);
+    }
+    dispatch({ type: 'SHOW_TOAST', payload: { message, undoId: options?.undoId } });
+    const durationMs = options?.durationMs ?? 3000;
+    undoTimerRef.current = window.setTimeout(() => {
+      dispatch({ type: 'HIDE_TOAST' });
+    }, durationMs);
+  };
+
+  const refreshAudits = async (): Promise<{ audits: BuildingAudit[]; csvSnapshot: string }> => {
     const audits = await listAudits();
     const csvSnapshot = auditsToCsvLong(audits);
     await setCsvSnapshot(csvSnapshot);
     dispatch({ type: 'SET_AUDITS', payload: { audits } });
     dispatch({ type: 'SET_CSV', payload: { csvSnapshot } });
+    return { audits, csvSnapshot };
   };
 
   const handleSave = async () => {
     if (!state.buildingName.trim()) {
-      dispatch({ type: 'SET_ERRORS', payload: { errors: { buildingName: 'Building name is required.' } } });
+      dispatch({
+        type: 'SET_ERRORS',
+        payload: { errors: { buildingName: 'Building name is required.' } }
+      });
+      dispatch({ type: 'INCREMENT_FOCUS' });
       return;
     }
 
     const now = new Date().toISOString();
     const floorsWithSite = [SITE_LABEL, ...state.config.floors];
     const audit: BuildingAudit = {
-      id: crypto.randomUUID(),
+      id: createUuid(),
       buildingName: state.buildingName.trim(),
       address: state.address.trim() || undefined,
       floors: [...floorsWithSite],
       features: [...state.config.features],
-      matrix: structuredClone(state.matrix),
+      matrix: cloneMatrix(state.matrix),
       createdAt: now,
       updatedAt: now
     };
 
-    await addAudit(audit);
-    await refreshAudits();
+    try {
+      await addAudit(audit);
+      await refreshAudits();
 
-    dispatch({
-      type: 'RESET_FORM',
-      payload: { matrix: createEmptyMatrix(state.config.features, floorsWithSite) }
-    });
+      dispatch({
+        type: 'RESET_FORM',
+        payload: { matrix: createEmptyMatrix(state.config.features, floorsWithSite) }
+      });
 
-    if (undoTimerRef.current) {
-      window.clearTimeout(undoTimerRef.current);
+      showToast('Building saved locally', {
+        undoId: audit.id,
+        durationMs: 3000
+      });
+    } catch (error) {
+      showToast('Save failed. Please try again.', { durationMs: 4000 });
     }
-
-    dispatch({ type: 'SHOW_TOAST', payload: { message: 'Saved', undoId: audit.id } });
-    undoTimerRef.current = window.setTimeout(() => {
-      dispatch({ type: 'HIDE_TOAST' });
-    }, 10000);
   };
 
   const collectPhotoIds = (audit: BuildingAudit): string[] => {
@@ -123,6 +154,27 @@ const App = () => {
       }
     }
     return Array.from(new Set(ids));
+  };
+
+  const ensureAuditsAndCsvSnapshot = async () => {
+    let audits = state.audits;
+    if (audits.length === 0) {
+      audits = await listAudits();
+      dispatch({ type: 'SET_AUDITS', payload: { audits } });
+    }
+
+    let csvSnapshot = state.csvSnapshot;
+    if (!csvSnapshot) {
+      csvSnapshot = auditsToCsvLong(audits);
+      try {
+        await setCsvSnapshot(csvSnapshot);
+        dispatch({ type: 'SET_CSV', payload: { csvSnapshot } });
+      } catch {
+        // Snapshot persistence is best-effort.
+      }
+    }
+
+    return { audits, csvSnapshot };
   };
 
   const handleUndo = async () => {
@@ -145,28 +197,36 @@ const App = () => {
   };
 
   const handleExport = async () => {
-    if (state.savedCount === 0) {
-      dispatch({ type: 'SHOW_TOAST', payload: { message: 'No saved entries to export.' } });
-      undoTimerRef.current = window.setTimeout(() => {
-        dispatch({ type: 'HIDE_TOAST' });
-      }, 5000);
-      return;
-    }
-
-    const csvSnapshot = state.csvSnapshot || auditsToCsvLong(state.audits);
-    if (!state.csvSnapshot) {
-      await setCsvSnapshot(csvSnapshot);
-      dispatch({ type: 'SET_CSV', payload: { csvSnapshot } });
-    }
-    const filename = buildCsvFilename();
     try {
+      const { audits, csvSnapshot } = await ensureAuditsAndCsvSnapshot();
+
+      if (audits.length === 0) {
+        showToast('No data to export.');
+        return;
+      }
+
+      const filename = buildCsvFilename();
       await exportCsvFile(csvSnapshot, filename);
-      dispatch({ type: 'SHOW_TOAST', payload: { message: 'Exported CSV' } });
-      undoTimerRef.current = window.setTimeout(() => {
-        dispatch({ type: 'HIDE_TOAST' });
-      }, 5000);
+      showToast('CSV exported');
     } catch (error) {
-      dispatch({ type: 'SHOW_TOAST', payload: { message: 'Export failed. Try download.' } });
+      showToast('Export not supported on this device.', { durationMs: 4000 });
+    }
+  };
+
+  const handleExportZip = async () => {
+    try {
+      const { audits, csvSnapshot } = await ensureAuditsAndCsvSnapshot();
+
+      if (audits.length === 0) {
+        showToast('No data to export.');
+        return;
+      }
+
+      const filename = buildZipFilename();
+      await exportZipFile(audits, csvSnapshot, filename);
+      showToast('ZIP exported');
+    } catch (error) {
+      showToast('ZIP generation failed.', { durationMs: 4000 });
     }
   };
 
@@ -225,10 +285,7 @@ const App = () => {
     const existing = new Set(state.config.features);
     const additions = RECOMMENDED_EXTRAS.filter((feature) => !existing.has(feature));
     if (additions.length === 0) {
-      dispatch({ type: 'SHOW_TOAST', payload: { message: 'All recommended features already added.' } });
-      undoTimerRef.current = window.setTimeout(() => {
-        dispatch({ type: 'HIDE_TOAST' });
-      }, 4000);
+      showToast('All recommended features already added.');
       return;
     }
     const nextConfig = { ...state.config, features: [...state.config.features, ...additions] };
@@ -239,10 +296,7 @@ const App = () => {
     const existing = new Set(state.config.features);
     const additions = CAMPUS_AUDIT_EXTRAS.filter((feature) => !existing.has(feature));
     if (additions.length === 0) {
-      dispatch({ type: 'SHOW_TOAST', payload: { message: 'Campus extras already added.' } });
-      undoTimerRef.current = window.setTimeout(() => {
-        dispatch({ type: 'HIDE_TOAST' });
-      }, 4000);
+      showToast('Campus extras already added.');
       return;
     }
     const nextConfig = { ...state.config, features: [...state.config.features, ...additions] };
@@ -251,6 +305,47 @@ const App = () => {
 
   const handleUpdateCell = (feature: string, floor: string, updates: Partial<MatrixCell>) => {
     dispatch({ type: 'UPDATE_CELL', payload: { feature, floor, updates } });
+  };
+
+  const captureGeoForCell = (feature: string, floor: string) => {
+    if (geoDeniedRef.current) {
+      return;
+    }
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+        dispatch({
+          type: 'UPDATE_CELL',
+          payload: {
+            feature,
+            floor,
+            updates: {
+              geo: {
+                lat: latitude,
+                lon: longitude,
+                accuracy: Number.isFinite(accuracy) ? accuracy : undefined,
+                capturedAt: new Date().toISOString()
+              }
+            }
+          }
+        });
+      },
+      (error) => {
+        if (error.code === error.PERMISSION_DENIED) {
+          geoDeniedRef.current = true;
+        }
+      },
+      { enableHighAccuracy: false, maximumAge: 60000, timeout: 8000 }
+    );
+  };
+
+  const handleToggleCell = (feature: string, floor: string) => {
+    dispatch({ type: 'TOGGLE_CELL', payload: { feature, floor } });
+    captureGeoForCell(feature, floor);
   };
 
   const floorsWithSite = [SITE_LABEL, ...state.config.floors];
@@ -294,9 +389,7 @@ const App = () => {
             features={state.config.features}
             floors={floorsWithSite}
             matrix={state.matrix}
-            onToggle={(feature, floor) =>
-              dispatch({ type: 'TOGGLE_CELL', payload: { feature, floor } })
-            }
+            onToggle={handleToggleCell}
             onOpenDetails={(feature, floor) => setDetailCell({ feature, floor })}
           />
 
@@ -340,7 +433,7 @@ const App = () => {
         onUndo={state.toast.undoId ? handleUndo : undefined}
       />
 
-      <ActionBar onSave={handleSave} onExport={handleExport} />
+      <ActionBar onSave={handleSave} onExport={handleExport} onExportZip={handleExportZip} />
     </>
   );
 };

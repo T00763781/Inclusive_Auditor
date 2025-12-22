@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { createUuid } from '../utils/uuid';
 import type { MatrixCell, PhotoAsset } from '../data/types';
 import { addPhotoAsset, deletePhotoAsset, getPhotoAssets } from '../data/storage';
 
@@ -82,7 +83,7 @@ const CellDetailsSheet = ({
     if (!file) {
       return;
     }
-    const id = crypto.randomUUID();
+    const id = createUuid();
     const asset: PhotoAsset = {
       id,
       blob: file,
