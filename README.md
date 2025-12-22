@@ -7,7 +7,7 @@ TRU Accessibility Audit is a mobile-first tool for building-by-building, floor-b
 Accessibility improvements depend on evidence that is easy to collect and defend. This app makes it simple to capture standardized observations in the field, even without internet access, and export them in a structured format.
 
 ## What data is stored and where
-- Stored locally on this device: building names, addresses, matrix selections, notes, photos, and optional location captured during a tap.
+- Stored locally on this device: building names, addresses, matrix selections, notes, photos, and optional location captured per feature.
 - Exported data: CSV and ZIP files are created on demand and saved or shared by you.
 - No cloud storage: there are no accounts, no uploads, and no background sync.
 
@@ -21,6 +21,10 @@ Accessibility improvements depend on evidence that is easy to collect and defend
 - Notes are added per cell (feature + floor).
 - Photos are attached per cell and stored locally on this device.
 - Photos are included in ZIP export only when they are referenced by audits.
+
+### Location capture
+- Use Capture location in the Notes panel to store optional coordinates for that feature and floor.
+- Location is captured only when you tap the button and saved with that single cell.
 
 ### Where photos live
 - Photos are stored in the browser's local IndexedDB storage.
@@ -57,7 +61,9 @@ Accessibility improvements depend on evidence that is easy to collect and defend
 ## Privacy statement
 - No accounts, no server, no cloud storage.
 - All data stays on this device until you export it.
-- Optional location is only captured when you tap a feature, and only if you allow it.
+- Location is captured only when you tap Capture location.
+- Location is stored locally and never transmitted.
+- Location is optional per feature.
 
 ## Limitations
 - Browser storage is limited. Very large photo sets may exceed storage limits.
