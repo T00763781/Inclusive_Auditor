@@ -9,7 +9,7 @@ import MatrixTable from './components/MatrixTable';
 import SettingsPanel from './components/SettingsPanel';
 import Toast from './components/Toast';
 import { auditsToCsvLong } from './data/csv';
-import { CAMPUS_AUDIT_EXTRAS, DEFAULT_FEATURES, RECOMMENDED_EXTRAS, SITE_LABEL } from './data/defaults';
+import { DEFAULT_FEATURES, SITE_LABEL } from './data/defaults';
 import { createEmptyMatrix, reconcileMatrix } from './data/matrix';
 import {
   addAudit,
@@ -31,6 +31,7 @@ import { appReducer, initialState } from './state/reducer';
 import { buildCsvFilename, exportCsvFile } from './utils/exportCsv';
 import { buildZipFilename, exportZipFile } from './utils/exportZip';
 import { createUuid } from './utils/uuid';
+import { TAB_SPECS } from './data/tabSpecs';
 
 const cloneMatrix = (matrix: Matrix): Matrix => {
   if (typeof structuredClone === 'function') {
@@ -281,28 +282,6 @@ const App = () => {
     await updateConfig(nextConfig);
   };
 
-  const handleAddRecommended = async () => {
-    const existing = new Set(state.config.features);
-    const additions = RECOMMENDED_EXTRAS.filter((feature) => !existing.has(feature));
-    if (additions.length === 0) {
-      showToast('All recommended features already added.');
-      return;
-    }
-    const nextConfig = { ...state.config, features: [...state.config.features, ...additions] };
-    await updateConfig(nextConfig);
-  };
-
-  const handleAddCampusExtras = async () => {
-    const existing = new Set(state.config.features);
-    const additions = CAMPUS_AUDIT_EXTRAS.filter((feature) => !existing.has(feature));
-    if (additions.length === 0) {
-      showToast('Campus extras already added.');
-      return;
-    }
-    const nextConfig = { ...state.config, features: [...state.config.features, ...additions] };
-    await updateConfig(nextConfig);
-  };
-
   const handleUpdateCell = (feature: string, floor: string, updates: Partial<MatrixCell>) => {
     dispatch({ type: 'UPDATE_CELL', payload: { feature, floor, updates } });
   };
@@ -372,7 +351,7 @@ const App = () => {
               <div>
                 <h2 className="text-base font-semibold text-tru-blue">Feature list</h2>
                 <p className="mt-1 text-xs text-tru-grey">
-                  Manage the feature list, add recommended extras, or reset to defaults.
+                  Manage the feature list or reset to defaults.
                 </p>
               </div>
               <button
@@ -386,7 +365,8 @@ const App = () => {
           </div>
 
           <MatrixTable
-            features={state.config.features}
+            tabs={TAB_SPECS}
+            allFeatures={state.config.features}
             floors={floorsWithSite}
             matrix={state.matrix}
             onToggle={handleToggleCell}
@@ -397,29 +377,25 @@ const App = () => {
         </main>
       </AppShell>
 
-      <FeatureManager
-        open={featureManagerOpen}
-        features={state.config.features}
-        onAddFeature={handleAddFeature}
-        onRemoveFeature={handleRemoveFeature}
-        onResetDefaults={handleResetFeatures}
-        onAddRecommended={handleAddRecommended}
-        onAddCampusExtras={handleAddCampusExtras}
-        onClose={() => setFeatureManagerOpen(false)}
-      />
+        <FeatureManager
+          open={featureManagerOpen}
+          features={state.config.features}
+          onAddFeature={handleAddFeature}
+          onRemoveFeature={handleRemoveFeature}
+          onResetDefaults={handleResetFeatures}
+          onClose={() => setFeatureManagerOpen(false)}
+        />
 
       {detailCell ? (
         <CellDetailsSheet
           open={Boolean(detailCell)}
           feature={detailCell.feature}
           floor={detailCell.floor}
+          floors={floorsWithSite}
           cell={state.matrix[detailCell.feature]?.[detailCell.floor] ?? { present: false }}
           onClose={() => setDetailCell(null)}
-          onTogglePresent={() =>
-            dispatch({
-              type: 'TOGGLE_CELL',
-              payload: { feature: detailCell.feature, floor: detailCell.floor }
-            })
+          onSelectFloor={(floor) =>
+            setDetailCell({ feature: detailCell.feature, floor })
           }
           onUpdateCell={(updates) =>
             handleUpdateCell(detailCell.feature, detailCell.floor, updates)

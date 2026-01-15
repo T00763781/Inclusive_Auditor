@@ -6,8 +6,6 @@ type FeatureManagerProps = {
   onAddFeature: (label: string) => void;
   onRemoveFeature: (label: string) => void;
   onResetDefaults: () => void;
-  onAddRecommended: () => void;
-  onAddCampusExtras: () => void;
   onClose: () => void;
 };
 
@@ -17,8 +15,6 @@ const FeatureManager = ({
   onAddFeature,
   onRemoveFeature,
   onResetDefaults,
-  onAddRecommended,
-  onAddCampusExtras,
   onClose
 }: FeatureManagerProps) => {
   const [label, setLabel] = useState('');
@@ -115,20 +111,6 @@ const FeatureManager = ({
         {error ? <p className="mt-2 text-xs font-semibold text-rose-600">{error}</p> : null}
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={onAddRecommended}
-            className="rounded-lg border border-tru-teal bg-tru-sage px-3 py-2 text-xs font-semibold text-tru-blue focus-visible:ring-2 focus-visible:ring-tru-teal"
-          >
-            Add recommended features
-          </button>
-          <button
-            type="button"
-            onClick={onAddCampusExtras}
-            className="rounded-lg border border-tru-teal bg-tru-yellow px-3 py-2 text-xs font-semibold text-tru-blue focus-visible:ring-2 focus-visible:ring-tru-teal"
-          >
-            Add Campus Audit Extras
-          </button>
           <button
             type="button"
             onClick={handleReset}

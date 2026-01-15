@@ -9,7 +9,9 @@ const CSV_HEADER = [
   'feature',
   'present',
   'notes',
-  'photo_count'
+  'photo_count',
+  'latitude',
+  'longitude'
 ];
 
 const escapeCsv = (value: string): string => {
@@ -37,6 +39,8 @@ export const auditsToCsvLong = (audits: BuildingAudit[]): string => {
         const present = cell?.present ? 'true' : 'false';
         const notes = cell?.notes ?? '';
         const photoCount = cell?.photoIds?.length ?? 0;
+        const latitude = cell?.geo?.lat;
+        const longitude = cell?.geo?.lon;
         const columns = [
           audit.id,
           audit.buildingName,
@@ -46,7 +50,9 @@ export const auditsToCsvLong = (audits: BuildingAudit[]): string => {
           feature,
           present,
           notes,
-          photoCount
+          photoCount,
+          latitude,
+          longitude
         ].map((value) => escapeCsv(formatValue(value)));
         rows.push(columns.join(','));
       }

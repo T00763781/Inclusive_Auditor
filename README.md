@@ -13,18 +13,26 @@ Accessibility improvements depend on evidence that is easy to collect and defend
 
 ## How to create an audit
 1. Enter a Building Name (required) and optional Address.
-2. Use the matrix to mark features as Present or Absent by tapping the dot.
-3. Add notes or photos by using the Notes button for any feature and floor.
-4. Tap Save building to store the audit locally.
+2. Choose a tab (Inclusivity & Accessibility, Student Supports & Services, or Campus Culture & Landmarks).
+3. Use the matrix to mark features as Present or Absent by tapping the dot.
+4. Add notes or photos by using the Notes button for any feature and floor.
+5. Tap Save building to store the audit locally.
+
+## Feature list
+- The default feature list is comprehensive and organized by section.
+- Use Manage features to add or remove items for your audit.
+- Tabs are defined by Markdown specs in the project root (TAB1_Inclusivity_and_Accessibility.md, TAB2_Student_Supports_and_Services.md, TAB3_Campus_Culture_and_Landmarks.md).
+- Campus Culture & Landmarks items should be marked on SITE when they refer to buildings or outdoor landmarks.
 
 ## Using notes and photos
 - Notes are added per cell (feature + floor).
+- Use the Notes button next to a feature to add notes or photos for a specific floor.
 - Photos are attached per cell and stored locally on this device.
 - Photos are included in ZIP export only when they are referenced by audits.
 
 ### Location capture
-- Use Capture location in the Notes panel to store optional coordinates for that feature and floor.
-- Location is captured only when you tap the button and saved with that single cell.
+- Location is captured when you tap a grid dot (best-effort, permission required).
+- Location is stored with that single feature and floor cell.
 
 ### Where photos live
 - Photos are stored in the browser's local IndexedDB storage.
@@ -61,7 +69,7 @@ Accessibility improvements depend on evidence that is easy to collect and defend
 ## Privacy statement
 - No accounts, no server, no cloud storage.
 - All data stays on this device until you export it.
-- Location is captured only when you tap Capture location.
+- Location is captured on grid tap.
 - Location is stored locally and never transmitted.
 - Location is optional per feature.
 

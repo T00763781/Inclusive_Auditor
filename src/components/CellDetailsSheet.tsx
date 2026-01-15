@@ -3,8 +3,6 @@ import { createUuid } from '../utils/uuid';
 import type { MatrixCell, PhotoAsset } from '../data/types';
 import { addPhotoAsset, deletePhotoAsset, getPhotoAssets } from '../data/storage';
 
-let geoDeniedForSession = false;
-
 type PhotoPreview = {
   id: string;
   url: string;
@@ -15,9 +13,10 @@ type CellDetailsSheetProps = {
   open: boolean;
   feature: string;
   floor: string;
+  floors: string[];
   cell: MatrixCell;
   onClose: () => void;
-  onTogglePresent: () => void;
+  onSelectFloor: (floor: string) => void;
   onUpdateCell: (updates: Partial<MatrixCell>) => void;
 };
 
@@ -25,22 +24,19 @@ const CellDetailsSheet = ({
   open,
   feature,
   floor,
+  floors,
   cell,
   onClose,
-  onTogglePresent,
+  onSelectFloor,
   onUpdateCell
 }: CellDetailsSheetProps) => {
   const [notes, setNotes] = useState(cell.notes ?? '');
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);
-  const [isCapturingLocation, setIsCapturingLocation] = useState(false);
-  const [geoMessage, setGeoMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
       setNotes(cell.notes ?? '');
-      setGeoMessage('');
-      setIsCapturingLocation(false);
     }
   }, [open, cell.notes, feature, floor]);
 
@@ -78,54 +74,6 @@ const CellDetailsSheet = ({
   if (!open) {
     return null;
   }
-
-  const formatCapturedAt = (value: string) => {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return value;
-    }
-    return date.toLocaleString();
-  };
-
-  const handleCaptureLocation = () => {
-    if (isCapturingLocation) {
-      return;
-    }
-    if (geoDeniedForSession) {
-      setGeoMessage('Location unavailable.');
-      return;
-    }
-    if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      setGeoMessage('Location unavailable.');
-      return;
-    }
-
-    setIsCapturingLocation(true);
-    setGeoMessage('');
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude, accuracy } = position.coords;
-        const nextGeo = {
-          lat: latitude,
-          lon: longitude,
-          accuracy: Number.isFinite(accuracy) ? accuracy : undefined,
-          capturedAt: new Date().toISOString()
-        };
-        onUpdateCell({ geo: nextGeo });
-        setIsCapturingLocation(false);
-        setGeoMessage('Location captured.');
-      },
-      (error) => {
-        if (error.code === error.PERMISSION_DENIED) {
-          geoDeniedForSession = true;
-        }
-        setIsCapturingLocation(false);
-        setGeoMessage('Location unavailable.');
-      },
-      { enableHighAccuracy: false, maximumAge: 60000, timeout: 8000 }
-    );
-  };
 
   const handleNotesChange = (value: string) => {
     setNotes(value);
@@ -184,7 +132,7 @@ const CellDetailsSheet = ({
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-tru-grey">
-              {floor}
+              Notes & photos
             </p>
             <h3 className="text-lg font-semibold text-tru-blue">{feature}</h3>
           </div>
@@ -197,21 +145,22 @@ const CellDetailsSheet = ({
           </button>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <span
-            className={`rounded-full px-3 py-1 text-xs font-semibold ${
-              cell.present ? 'bg-tru-teal text-tru-blue' : 'border border-tru-grey text-tru-grey'
-            }`}
-          >
-            {cell.present ? 'Present' : 'Absent'}
-          </span>
-          <button
-            type="button"
-            onClick={onTogglePresent}
-            className="rounded-full border border-tru-teal px-3 py-1 text-xs font-semibold text-tru-blue focus-visible:ring-2 focus-visible:ring-tru-teal"
-          >
-            Toggle
-          </button>
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {floors.map((label) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => onSelectFloor(label)}
+              className={`min-h-[32px] rounded-full border px-3 py-1 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-tru-teal ${
+                label === floor
+                  ? 'border-tru-blue bg-tru-teal text-tru-blue'
+                  : 'border-tru-grey text-tru-blue'
+              }`}
+              aria-pressed={label === floor}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         <div className="mt-4">
@@ -226,38 +175,6 @@ const CellDetailsSheet = ({
             className="mt-2 w-full rounded-lg border border-tru-grey px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-tru-teal"
             placeholder="Add observations, details, or follow-ups..."
           />
-        </div>
-
-        <div className="mt-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h4 className="text-sm font-semibold text-tru-blue">Location</h4>
-            <button
-              type="button"
-              onClick={handleCaptureLocation}
-              className="min-h-[44px] rounded-full border border-tru-grey px-3 py-2 text-xs font-semibold text-tru-blue focus-visible:ring-2 focus-visible:ring-tru-teal disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={isCapturingLocation}
-              aria-busy={isCapturingLocation}
-            >
-              {isCapturingLocation ? 'Capturing...' : 'Capture location'}
-            </button>
-          </div>
-          <div className="mt-2 rounded-lg border border-tru-sage bg-tru-cloud px-3 py-2 text-xs text-tru-blue">
-            {cell.geo ? (
-              <div className="space-y-1">
-                <div>Lat: {cell.geo.lat.toFixed(5)}</div>
-                <div>Lon: {cell.geo.lon.toFixed(5)}</div>
-                {typeof cell.geo.accuracy === 'number' ? (
-                  <div>Accuracy: +/-{Math.round(cell.geo.accuracy)} m</div>
-                ) : null}
-                <div>Captured: {formatCapturedAt(cell.geo.capturedAt)}</div>
-              </div>
-            ) : (
-              <div>No location captured</div>
-            )}
-          </div>
-          {geoMessage ? (
-            <p className="mt-2 text-xs text-tru-grey" aria-live="polite">{geoMessage}</p>
-          ) : null}
         </div>
 
         <div className="mt-4">

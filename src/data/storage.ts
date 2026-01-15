@@ -1,6 +1,6 @@
 import { clear, createStore, del, entries, get, set } from 'idb-keyval';
 import type { BuildingAudit, Config, Matrix, MatrixCell, PhotoAsset } from './types';
-import { createDefaultConfig, CONFIG_VERSION } from './defaults';
+import { createDefaultConfig, CONFIG_VERSION, DEFAULT_FEATURES } from './defaults';
 
 const DB_NAME = 'tru-audit-db';
 const AUDIT_STORE = createStore(DB_NAME, 'audits');
@@ -82,7 +82,8 @@ export const getConfig = async (): Promise<Config> => {
   }
 
   if (config.version < CONFIG_VERSION) {
-    const migrated = { ...config, version: CONFIG_VERSION };
+    const mergedFeatures = Array.from(new Set([...config.features, ...DEFAULT_FEATURES]));
+    const migrated = { ...config, features: mergedFeatures, version: CONFIG_VERSION };
     await setConfig(migrated);
     return migrated;
   }
