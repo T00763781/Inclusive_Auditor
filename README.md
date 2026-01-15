@@ -140,21 +140,3 @@ It is **not** intended to be used as a standalone compliance or certification au
 * Long-term institutional use requires defined ownership and review processes
 
 ---
-
-## Governance note (important)
-
-For sustainable use, this tool assumes:
-
-* **IT** provides platform guidance, hosting decisions, and security guardrails
-* **Accessibility governance bodies** steward data standards and review cadence
-* **Content owners** verify and maintain their respective domains
-
-The tool is designed to support this model — not replace it.
-
----
-
-If you want, next I can:
-
-* Create a **1-page “README for committees”** (non-technical)
-* Produce a **“Minimum Data Standard” appendix** for Accessibility review
-* Draft a **handoff / governance diagram** you can show in the meeting
