@@ -1,82 +1,160 @@
-# TRU Accessibility Audit
+# TRU Space Auditor
 
-## What this app is
-TRU Accessibility Audit is a mobile-first tool for building-by-building, floor-by-floor accessibility and inclusion audits. It is designed for campus walkthroughs where speed, clarity, and offline reliability matter. The app helps auditors capture observations, notes, and photos in a consistent matrix so results can be exported and reviewed.
+*A structured field-audit tool for inclusive and accessible campus spaces*
 
-## Why it exists
-Accessibility improvements depend on evidence that is easy to collect and defend. This app makes it simple to capture standardized observations in the field, even without internet access, and export them in a structured format.
+## Overview
 
-## What data is stored and where
-- Stored locally on this device: building names, addresses, matrix selections, notes, photos, and optional location captured per feature.
-- Exported data: CSV and ZIP files are created on demand and saved or shared by you.
-- No cloud storage: there are no accounts, no uploads, and no background sync.
+**TRU Space Auditor** is a mobile-first, offline-capable tool for conducting **building-by-building and site-level audits** of inclusive and accessible spaces on campus.
 
-## How to create an audit
-1. Enter a Building Name (required) and optional Address.
-2. Choose a tab (Inclusivity & Accessibility, Student Supports & Services, or Campus Culture & Landmarks).
-3. Use the matrix to mark features as Present or Absent by tapping the dot.
-4. Add notes or photos by using the Notes button for any feature and floor.
-5. Tap Save building to store the audit locally.
+It was developed in response to a real process gap encountered during Intercultural Ambassador (ICA) audits: multiple auditors, multiple vocabularies, and no shared structure for merging, verifying, and maintaining results over time.
 
-## Feature list
-- The default feature list is comprehensive and organized by section.
-- Use Manage features to add or remove items for your audit.
-- Tabs are defined by Markdown specs in the project root (TAB1_Inclusivity_and_Accessibility.md, TAB2_Student_Supports_and_Services.md, TAB3_Campus_Culture_and_Landmarks.md).
-- Campus Culture & Landmarks items should be marked on SITE when they refer to buildings or outdoor landmarks.
+This tool focuses on **how accessibility and inclusivity data is captured**, not on how it is ultimately displayed.
 
-## Using notes and photos
-- Notes are added per cell (feature + floor).
-- Use the Notes button next to a feature to add notes or photos for a specific floor.
-- Photos are attached per cell and stored locally on this device.
-- Photos are included in ZIP export only when they are referenced by audits.
+---
 
-### Location capture
-- Location is captured when you tap a grid dot (best-effort, permission required).
-- Location is stored with that single feature and floor cell.
+## Purpose and scope
 
-### Where photos live
-- Photos are stored in the browser's local IndexedDB storage.
-- They are not written to the filesystem.
-- They become files only when exported via ZIP.
-- Clearing browser data deletes them.
+The Space Auditor exists to solve three problems:
 
-## Saving buildings
-- Tap Save building to store the current building audit.
-- The form clears for the next building.
-- A confirmation toast shows that the building was saved locally.
+1. **Shared language**
+   Provide a consistent, structured vocabulary for recording accessibility and inclusion features across auditors, buildings, and years.
 
-## Exporting CSV
-- Tap Export CSV to download a CSV file containing all saved audits.
-- The CSV includes one row per feature and floor.
-- Use CSV export for analysis, reporting, or import into other tools.
+2. **Evidence capture in the field**
+   Enable fast, reliable data collection during walkthroughs, including notes and photos, even when offline.
 
-## Exporting ZIP (CSV + photos)
-- Tap Export ZIP (CSV + photos) to download a single ZIP file.
-- The ZIP always includes audit.csv and a photos folder.
-- Photos are organized by building and named by feature and floor.
-- This is the best option for sharing evidence with teams.
+3. **Reusable source data**
+   Produce clean, structured exports (CSV + optional photo ZIP) that can feed **any downstream interface** (lists, maps, reports, or future tools).
 
-## Offline behavior
-- The app works offline after the first load.
-- All audits, notes, and photos are stored locally until export.
-- Exports also work offline.
+> This app is a **data-capture and export tool**.
+> It is **not** a public map, website, or compliance certification system.
 
-## Mobile usage guidance
-- Add the app to your Home Screen for a full-screen experience.
-- Use the sticky action bar at the bottom for Save and Export actions.
-- The matrix scrolls horizontally and vertically for quick checks on site.
 
-## Privacy statement
-- No accounts, no server, no cloud storage.
-- All data stays on this device until you export it.
-- Location is captured on grid tap.
-- Location is stored locally and never transmitted.
-- Location is optional per feature.
+## Data model and storage
 
-## Limitations
-- Browser storage is limited. Very large photo sets may exceed storage limits.
-- Clearing browser data or uninstalling the PWA removes local audits.
-- Photos are not synced anywhere automatically. Export is required for backups.
+### What is stored locally
+
+All data is stored **only on the user’s device** until export:
+
+* Building name and optional address
+* Feature selections (matrix)
+* Per-feature, per-floor notes
+* Photos attached to specific features
+* Optional location capture (best-effort, permission-based)
+
+### What is exported
+
+* **CSV export:** one row per feature per floor/site
+* **ZIP export:** CSV + referenced photos, organized by building
+
+There are:
+
+* No accounts
+* No cloud storage
+* No background uploads
+* No analytics or tracking
+
+Clearing browser data or uninstalling the PWA removes local audits.
+
+---
+
+## Audit structure
+
+### Tabs
+
+Audits are organized into three domains:
+
+1. **Inclusivity & Accessibility**
+2. **Student Supports & Services**
+3. **Campus Culture & Landmarks**
+
+Each tab represents a **content domain**, not ownership.
+Ownership and verification should be determined institutionally.
+
+### Features
+
+* Default feature lists are defined via Markdown specifications:
+
+  * `TAB1_Inclusivity_and_Accessibility.md`
+  * `TAB2_Student_Supports_and_Services.md`
+  * `TAB3_Campus_Culture_and_Landmarks.md`
+* Features can be added or removed to fit the scope of a given audit.
+* Outdoor features and landmarks should be recorded at the **SITE** level.
+
+---
+
+## How to conduct an audit
+
+1. Enter a **Building Name** (required) and optional address.
+2. Select the appropriate **tab** for the audit domain.
+3. Mark features as present or absent using the matrix.
+4. Add **notes and/or photos** for specific features and floors.
+5. Save the building to store the audit locally.
+6. Export CSV or ZIP when ready to share or archive.
+
+---
+
+## Notes, photos, and location capture
+
+* Notes and photos are attached **per feature per floor/site**.
+* Photos are stored in browser IndexedDB and included only when exported.
+* Location capture occurs when a matrix cell is tapped (permission required).
+* Location is stored locally and associated only with that specific record.
+
+---
+
+## Offline use
+
+* Works offline after initial load.
+* All auditing, saving, and exporting functions work without internet.
+* Ideal for walkthroughs in basements, stairwells, and older buildings.
+
+---
+
+## Privacy and data handling
+
+* No personal data is collected.
+* No data leaves the device unless explicitly exported.
+* Location capture is optional and never transmitted automatically.
+
+---
 
 ## Intended use
-This app supports inclusive and accessible space audits for campus facilities. It is intended for structured observations and evidence gathering, not as a compliance certification tool.
+
+The Space Auditor supports **structured observation and evidence gathering** for inclusive and accessible spaces on campus.
+
+It is designed to:
+
+* Support student, staff, and committee-led audits
+* Improve continuity across semesters and personnel changes
+* Enable clearer review, verification, and decision-making
+
+It is **not** intended to be used as a standalone compliance or certification authority.
+
+---
+
+## Known limitations
+
+* Browser storage limits may constrain very large photo sets
+* Clearing browser data deletes local audits
+* Data persistence depends on user export discipline
+* Long-term institutional use requires defined ownership and review processes
+
+---
+
+## Governance note (important)
+
+For sustainable use, this tool assumes:
+
+* **IT** provides platform guidance, hosting decisions, and security guardrails
+* **Accessibility governance bodies** steward data standards and review cadence
+* **Content owners** verify and maintain their respective domains
+
+The tool is designed to support this model — not replace it.
+
+---
+
+If you want, next I can:
+
+* Create a **1-page “README for committees”** (non-technical)
+* Produce a **“Minimum Data Standard” appendix** for Accessibility review
+* Draft a **handoff / governance diagram** you can show in the meeting
