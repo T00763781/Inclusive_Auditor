@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="TRU Accessibility Audit">
+  <rect width="512" height="512" rx="96" fill="#003e51" />
+  <circle cx="156" cy="192" r="56" fill="#fff5de" />
+  <circle cx="356" cy="192" r="56" fill="#fff5de" />
+  <path d="M128 320h256a24 24 0 0 1 24 24v56a24 24 0 0 1-24 24H128a24 24 0 0 1-24-24v-56a24 24 0 0 1 24-24z" fill="#fff5de" />
+  <path d="M196 280c20-16 44-24 60-24s40 8 60 24" stroke="#fff5de" stroke-width="24" fill="none" stroke-linecap="round" />
+</svg>
