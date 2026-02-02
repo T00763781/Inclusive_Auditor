@@ -42,6 +42,7 @@
 - Optional geolocation is captured on dot toggle and stored per cell.
 - Notes/photos are opened from the feature-level Notes button, not from the grid tap.
 - The matrix UI is split into three tabs using Markdown-defined sections (collapsible).
+- On mobile screens, the matrix renders a floor-first list view (single floor selector + vertical feature list).
 - Tab 3 (Campus Culture & Landmarks) is intended for SITE-level buildings/landmarks.
 
 2) Save
