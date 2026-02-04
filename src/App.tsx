@@ -6,6 +6,7 @@ import CellDetailsSheet from './components/CellDetailsSheet';
 import FeatureManager from './components/FeatureManager';
 import FloorManager from './components/FloorManager';
 import MatrixTable from './components/MatrixTable';
+import PermissionsHelper from './components/PermissionsHelper';
 import SettingsPanel from './components/SettingsPanel';
 import Toast from './components/Toast';
 import { auditsToCsvLong, isCsvSnapshotCompatible } from './data/csv';
@@ -333,6 +334,7 @@ const App = () => {
     <>
       <AppShell savedCount={state.savedCount} online={state.online}>
         <main className="flex flex-col gap-6 motion-safe:animate-fade-up">
+          <PermissionsHelper />
           <BuildingForm
             buildingName={state.buildingName}
             address={state.address}

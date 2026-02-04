@@ -13,11 +13,13 @@ const AppShell = ({ savedCount, online, children }: AppShellProps) => {
         <header className="rounded-xl border border-tru-sage bg-white/90 p-5 shadow-soft backdrop-blur">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-tru-grey">
-                TRU Inclusive & Accessible Spaces
+              <h1 className="text-2xl font-semibold text-tru-blue sm:text-3xl">
+                TRU Spaces Audit
+              </h1>
+              <p className="mt-1 text-sm text-tru-grey">
+                A multipurpose spatial capture tool for documenting spaces, features, and on-site
+                evidence.
               </p>
-              <h1 className="text-2xl font-semibold sm:text-3xl text-tru-blue">TRU Accessibility Audit</h1>
-              <p className="mt-1 text-sm text-tru-grey">Building-by-building, floor-by-floor</p>
             </div>
             <div className="flex flex-col items-end gap-2">
               <span className="rounded-full bg-tru-sage px-3 py-1 text-xs font-semibold text-tru-blue">
@@ -32,6 +34,9 @@ const AppShell = ({ savedCount, online, children }: AppShellProps) => {
           </div>
         </header>
         {children}
+        <footer className="text-center text-xs text-tru-grey">
+          Built by Earl and the 2025-2026 Intercultural Ambassador Team
+        </footer>
       </div>
     </div>
   );
